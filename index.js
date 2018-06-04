@@ -1,4 +1,5 @@
 const axios = require('axios')
+const fs = require('fs')
 
 //  https://lilt.com/kb/api/document-translation
 const LILT_API = 'https://lilt.com/2'
@@ -32,6 +33,24 @@ async function translateFromDocuments ({ documents, key }) {
     .map(translate, { key })
 }
 
+async function save (translation) {
+  const [ language, file ] = await translation
+
+  const filename = this.getFileName(language)
+
+  fs.writeFile(filename, JSON.stringify(file, null, 2), (err) => {
+    if (err) throw err
+    this.success(language)
+  })
+}
+
+async function saveTranslationFromDocuments ({ documents, key, ...rest }) {
+  const translations = await translateFromDocuments({ documents, key })
+
+  return translations.forEach(save, rest)
+}
+
 module.exports = {
-  translateFromDocuments
+  translateFromDocuments,
+  saveTranslationFromDocuments
 }
